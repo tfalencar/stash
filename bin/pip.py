@@ -696,11 +696,33 @@ class ArchiveFileInstaller(object):
         if os.path.exists(dest):
             if NO_OVERWRITE:
                 raise PipError('cannot overwrite existing target, manual removal required: {}'.format(dest))
+            MERGE = True
+            if MERGE:
+                print('Attempting directory merge')
+                print('_______')
+                print(src)
+                print('.........')
+                print(dest)
+                print('++++++++++')
+                for dirpath, dirnames, filenames in os.walk(src):
+                    for fn in filenames:
+                        src_fn = os.path.join(src, dirpath, fn)
+                        dst_fn = src_fn.replace(src, dest)
+
+                        try:
+                            os.makedirs(os.path.dirname(dst_fn))
+                        except OSError:
+                            pass
+
+                        print('%s -> %s' %(src_fn, dst_fn))
+                        shutil.copy2(src_fn, dst_fn)
+                        print('_______')
+                return
+            if os.path.isdir(dest):
+                shutil.rmtree(dest)
             else:
-                if os.path.isdir(dest):
-                    shutil.rmtree(dest)
-                else:
-                    os.remove(dest)
+                os.remove(dest)
+
         shutil.move(src, dest)
 
 
